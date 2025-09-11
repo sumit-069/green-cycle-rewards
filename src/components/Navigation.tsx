@@ -5,7 +5,11 @@ import ecoLogo from '@/assets/eco-logo.png';
 import { useAuth } from '@/hooks/useAuth';
 import AuthDialog from './AuthDialog';
 
-const Navigation = () => {
+interface NavigationProps {
+  onTabChange?: (tabId: string) => void;
+}
+
+const Navigation: React.FC<NavigationProps> = ({ onTabChange }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
@@ -22,16 +26,34 @@ const Navigation = () => {
   }, []);
 
   const navItems = [
-    { name: 'Home', href: '#home' },
-    { name: 'Articles', href: '#articles' },
-    { name: 'Events', href: '#events' },
-    { name: 'Policies', href: '#policies' },
-    { name: 'Scan Waste', href: '#scan-waste' },
-    { name: 'Uses of Waste', href: '#uses-waste' },
-    { name: 'Notify Municipal', href: '#notify-municipal' },
-    { name: 'Rewards', href: '#rewards' },
-    { name: 'Dashboard', href: '#dashboard' }
+    { name: 'Home', action: () => scrollToTop() },
+    { name: 'Articles', action: () => handleNavClick('articles') },
+    { name: 'Events', action: () => handleNavClick('events') },
+    { name: 'Policies', action: () => handleNavClick('policies') },
+    { name: 'Scan Waste', action: () => handleNavClick('scan-waste') },
+    { name: 'Uses of Waste', action: () => handleNavClick('uses-waste') },
+    { name: 'Notify Municipal', action: () => handleNavClick('notify-municipal') },
+    { name: 'Rewards', action: () => handleNavClick('rewards') },
+    { name: 'Dashboard', action: () => alert('Dashboard coming soon!') }
   ];
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavClick = (tabId: string) => {
+    // Scroll to features section
+    const featuresSection = document.getElementById('features');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    // Change tab
+    if (onTabChange) {
+      onTabChange(tabId);
+    }
+    // Close mobile menu
+    setIsMenuOpen(false);
+  };
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-smooth ${
@@ -53,13 +75,13 @@ const Navigation = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">
             {navItems.map((item) => (
-              <a
+              <button
                 key={item.name}
-                href={item.href}
-                className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-smooth hover:bg-primary/5 rounded-md"
+                onClick={item.action}
+                className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-smooth hover:bg-primary/5 rounded-md cursor-pointer"
               >
                 {item.name}
-              </a>
+              </button>
             ))}
           </div>
 
@@ -116,14 +138,13 @@ const Navigation = () => {
           <div className="lg:hidden bg-card/95 backdrop-blur-md rounded-lg mt-2 p-4 card-shadow">
             <div className="flex flex-col space-y-2">
               {navItems.map((item) => (
-                <a
+                <button
                   key={item.name}
-                  href={item.href}
-                  className="px-4 py-3 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-md transition-smooth"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={item.action}
+                  className="px-4 py-3 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-md transition-smooth text-left cursor-pointer"
                 >
                   {item.name}
-                </a>
+                </button>
               ))}
               
               {/* Mobile Points Display */}

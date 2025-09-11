@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   BookOpen, 
@@ -18,8 +18,27 @@ import UsesWasteTab from './tabs/UsesWasteTab';
 import NotifyMunicipalTab from './tabs/NotifyMunicipalTab';
 import RewardsTab from './tabs/RewardsTab';
 
-const TabbedFeatures = () => {
-  const [activeTab, setActiveTab] = useState('articles');
+interface TabbedFeaturesProps {
+  activeTab?: string;
+  onTabChange?: (tabId: string) => void;
+}
+
+const TabbedFeatures: React.FC<TabbedFeaturesProps> = ({ 
+  activeTab = 'articles', 
+  onTabChange 
+}) => {
+  const [currentTab, setCurrentTab] = useState(activeTab);
+
+  useEffect(() => {
+    setCurrentTab(activeTab);
+  }, [activeTab]);
+
+  const handleTabChange = (tabId: string) => {
+    setCurrentTab(tabId);
+    if (onTabChange) {
+      onTabChange(tabId);
+    }
+  };
 
   const tabs = [
     {
@@ -92,7 +111,7 @@ const TabbedFeatures = () => {
         </div>
 
         {/* Tabbed Interface */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
           {/* Tab Navigation - Responsive Grid */}
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 h-auto p-2 bg-muted/50 backdrop-blur-sm rounded-xl">
             {tabs.map((tab) => {

@@ -7,9 +7,14 @@ import Footer from '@/components/Footer';
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('articles');
 
   const handleLoadingComplete = () => {
     setIsLoading(false);
+  };
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
   };
 
   if (isLoading) {
@@ -18,10 +23,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
+      <Navigation onTabChange={handleTabChange} />
       <main>
         <HeroSection />
-        <TabbedFeatures />
+        <TabbedFeatures activeTab={activeTab} onTabChange={setActiveTab} />
       </main>
       <Footer />
     </div>
