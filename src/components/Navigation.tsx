@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Leaf, Menu, X, User, LogOut, Coins } from 'lucide-react';
 import ecoLogo from '@/assets/eco-logo.png';
+import { useAuth } from '@/hooks/useAuth';
+import AuthDialog from './AuthDialog';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // This will be connected to actual auth later
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [ecoPoints, setEcoPoints] = useState(1250); // Mock points data
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,10 +42,10 @@ const Navigation = () => {
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <img src={ecoLogo} alt="EcoWaste Logo" className="w-8 h-8" />
+              <img src={ecoLogo} alt="GreenoVent Logo" className="w-8 h-8" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">EcoWaste</h2>
+              <h2 className="text-xl font-bold text-foreground">GreenoVent</h2>
               <p className="text-xs text-muted-foreground">Smart & Green</p>
             </div>
           </div>
@@ -63,7 +66,7 @@ const Navigation = () => {
           {/* Right Side - Points & Auth */}
           <div className="flex items-center space-x-4">
             {/* Eco Points */}
-            {isLoggedIn && (
+            {user && (
               <div className="hidden sm:flex items-center space-x-2 bg-primary/10 px-3 py-2 rounded-full">
                 <Coins className="w-4 h-4 text-primary" />
                 <span className="font-semibold text-primary">{ecoPoints}</span>
@@ -71,7 +74,7 @@ const Navigation = () => {
             )}
 
             {/* Auth Buttons */}
-            {isLoggedIn ? (
+            {user ? (
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" size="sm">
                   <User className="w-4 h-4" />
@@ -80,7 +83,7 @@ const Navigation = () => {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => setIsLoggedIn(false)}
+                  onClick={signOut}
                 >
                   <LogOut className="w-4 h-4" />
                   Logout
@@ -90,7 +93,7 @@ const Navigation = () => {
               <Button 
                 variant="eco" 
                 size="sm"
-                onClick={() => setIsLoggedIn(true)}
+                onClick={() => setAuthDialogOpen(true)}
               >
                 Login
               </Button>
@@ -124,7 +127,7 @@ const Navigation = () => {
               ))}
               
               {/* Mobile Points Display */}
-              {isLoggedIn && (
+              {user && (
                 <div className="flex items-center justify-center space-x-2 bg-primary/10 px-4 py-3 rounded-lg mt-4">
                   <Coins className="w-5 h-5 text-primary" />
                   <span className="font-semibold text-primary">Eco Points: {ecoPoints}</span>
@@ -134,6 +137,8 @@ const Navigation = () => {
           </div>
         )}
       </div>
+      
+      <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
     </nav>
   );
 };
