@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Leaf, Menu, X, User, LogOut, Coins } from 'lucide-react';
 import ecoLogo from '@/assets/eco-logo.png';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import AuthDialog from './AuthDialog';
 
 interface NavigationProps {
@@ -15,6 +16,7 @@ const Navigation: React.FC<NavigationProps> = ({ onTabChange }) => {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [ecoPoints, setEcoPoints] = useState(1250); // Mock points data
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,7 +36,7 @@ const Navigation: React.FC<NavigationProps> = ({ onTabChange }) => {
     { name: 'Uses of Waste', action: () => handleNavClick('uses-waste') },
     { name: 'Notify Municipal', action: () => handleNavClick('notify-municipal') },
     { name: 'Rewards', action: () => handleNavClick('rewards') },
-    { name: 'Dashboard', action: () => alert('Dashboard coming soon!') }
+    { name: 'Dashboard', action: () => navigate('/dashboard') }
   ];
 
   const scrollToTop = () => {
