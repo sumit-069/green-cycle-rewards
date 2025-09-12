@@ -92,6 +92,7 @@ If you are not sure, choose "Other". Give only the category name as the final ou
         disposal: 'Clean thoroughly before recycling',
         points: 10,
         carbonSaved: '0.3 kg CO₂',
+        biodegradable: false,
         suggestions: [
           'Clean thoroughly before recycling',
           'Remove caps and labels if possible',
@@ -104,6 +105,7 @@ If you are not sure, choose "Other". Give only the category name as the final ou
         disposal: 'Compost bin or organic waste collection',
         points: 5,
         carbonSaved: '0.2 kg CO₂',
+        biodegradable: true,
         suggestions: [
           'Add to compost bin',
           'Separate from other waste types',
@@ -116,6 +118,7 @@ If you are not sure, choose "Other". Give only the category name as the final ou
         disposal: 'Recycling bin after cleaning',
         points: 15,
         carbonSaved: '0.8 kg CO₂',
+        biodegradable: false,
         suggestions: [
           'Clean thoroughly before recycling',
           'Remove any non-metal components',
@@ -128,6 +131,7 @@ If you are not sure, choose "Other". Give only the category name as the final ou
         disposal: 'Glass recycling bin',
         points: 12,
         carbonSaved: '0.4 kg CO₂',
+        biodegradable: false,
         suggestions: [
           'Remove caps and lids',
           'Clean thoroughly',
@@ -140,6 +144,7 @@ If you are not sure, choose "Other". Give only the category name as the final ou
         disposal: 'Paper recycling bin',
         points: 8,
         carbonSaved: '0.6 kg CO₂',
+        biodegradable: true,
         suggestions: [
           'Remove any plastic components',
           'Ensure it\'s clean and dry',
@@ -152,6 +157,7 @@ If you are not sure, choose "Other". Give only the category name as the final ou
         disposal: 'Certified e-waste recycling center',
         points: 20,
         carbonSaved: '1.2 kg CO₂',
+        biodegradable: false,
         suggestions: [
           'Remove batteries if possible',
           'Find certified e-waste recycling center',
@@ -164,6 +170,7 @@ If you are not sure, choose "Other". Give only the category name as the final ou
         disposal: 'Check local disposal guidelines',
         points: 5,
         carbonSaved: '0.1 kg CO₂',
+        biodegradable: false,
         suggestions: [
           'Consult local waste management guidelines',
           'Contact waste management service',

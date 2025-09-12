@@ -289,14 +289,22 @@ const ScanWasteTab = () => {
                       isResult={true}
                     />
                     
-                    <div className="grid md:grid-cols-2 gap-4 text-sm">
+                    <div className="grid md:grid-cols-3 gap-4 text-sm">
                       <div className="bg-primary/5 rounded-lg p-4">
                         <div className="font-semibold text-primary mb-2">Eco Points Earned</div>
-                        <div className="text-2xl font-bold text-primary">+{scanResult.ecoPoints}</div>
+                        <div className="text-2xl font-bold text-primary">+{scanResult.points}</div>
                       </div>
                       <div className="bg-success/5 rounded-lg p-4">
                         <div className="font-semibold text-success mb-2">Carbon Saved</div>
                         <div className="text-2xl font-bold text-success">{scanResult.carbonSaved}</div>
+                      </div>
+                      <div className={`rounded-lg p-4 ${scanResult.biodegradable ? 'bg-success/5' : 'bg-muted/50'}`}>
+                        <div className={`font-semibold mb-2 ${scanResult.biodegradable ? 'text-success' : 'text-muted-foreground'}`}>
+                          {scanResult.biodegradable ? 'Biodegradable' : 'Non-Biodegradable'}
+                        </div>
+                        <div className={`text-lg font-bold ${scanResult.biodegradable ? 'text-success' : 'text-muted-foreground'}`}>
+                          {scanResult.biodegradable ? '🌱 Yes' : '♻️ No'}
+                        </div>
                       </div>
                     </div>
                   </div>
