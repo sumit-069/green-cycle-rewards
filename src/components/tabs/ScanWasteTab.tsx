@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { 
   Upload, 
   Camera, 
@@ -9,12 +10,19 @@ import {
   Recycle,
   Trash2,
   Zap,
-  Info
+  Info,
+  X
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const ScanWasteTab = () => {
   const [scanResult, setScanResult] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
 
   const wasteTypes = {
     organic: {
@@ -68,13 +76,69 @@ const ScanWasteTab = () => {
     carbonSaved: '0.5 kg CO₂'
   };
 
-  const handleScan = () => {
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('File size must be less than 10MB');
+        return;
+      }
+      
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select a valid image file');
+        return;
+      }
+
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  const handleScan = async () => {
+    if (!selectedFile) {
+      toast.error('Please select an image first');
+      return;
+    }
+
     setIsScanning(true);
-    // Simulate AI scanning process
-    setTimeout(() => {
+    try {
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+
+      const { data, error } = await supabase.functions.invoke('classify-waste', {
+        body: formData,
+      });
+
+      if (error) {
+        console.error('Classification error:', error);
+        toast.error('Failed to classify waste. Please try again.');
+        return;
+      }
+
+      setScanResult(data);
+      toast.success('Waste classified successfully!');
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Something went wrong. Please try again.');
+    } finally {
       setIsScanning(false);
-      setScanResult(mockScanResult);
-    }, 2000);
+    }
+  };
+
+  const resetScan = () => {
+    setScanResult(null);
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
+    }
   };
 
   const WasteTypeCard = ({ type, data, isResult = false }) => {
@@ -120,32 +184,78 @@ const ScanWasteTab = () => {
           <div className="bg-card/50 backdrop-blur-sm rounded-lg p-8 border-2 border-dashed border-primary/30 hover:border-primary/60 transition-colors">
             {!scanResult ? (
               <div className="space-y-4">
-                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                  {isScanning ? (
-                    <Scan className="w-10 h-10 text-primary animate-pulse" />
-                  ) : (
-                    <Upload className="w-10 h-10 text-primary" />
-                  )}
-                </div>
-                
-                {isScanning ? (
-                  <div className="space-y-2">
-                    <p className="text-foreground font-medium">Analyzing waste...</p>
-                    <div className="w-48 mx-auto bg-muted rounded-full h-2">
-                      <div className="bg-primary h-2 rounded-full animate-pulse w-3/4" />
+                {/* Hidden file inputs */}
+                <Input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <Input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+
+                {/* Preview area */}
+                {previewUrl ? (
+                  <div className="space-y-4">
+                    <div className="relative inline-block">
+                      <img 
+                        src={previewUrl} 
+                        alt="Selected waste item" 
+                        className="max-w-xs max-h-64 mx-auto rounded-lg shadow-lg"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-2 -right-2 w-6 h-6 p-0 rounded-full"
+                        onClick={resetScan}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
                     </div>
+                    {isScanning ? (
+                      <div className="space-y-2">
+                        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                          <Scan className="w-10 h-10 text-primary animate-pulse" />
+                        </div>
+                        <p className="text-foreground font-medium">Analyzing waste...</p>
+                        <div className="w-48 mx-auto bg-muted rounded-full h-2">
+                          <div className="bg-primary h-2 rounded-full animate-pulse w-3/4" />
+                        </div>
+                      </div>
+                    ) : (
+                      <Button variant="eco" onClick={handleScan} className="mx-auto">
+                        <Scan className="w-4 h-4" />
+                        Classify Waste
+                      </Button>
+                    )}
                   </div>
                 ) : (
-                  <>
+                  <div className="space-y-4">
+                    <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                      <Upload className="w-10 h-10 text-primary" />
+                    </div>
                     <p className="text-foreground font-medium">
                       Drop your waste image here or click to upload
                     </p>
                     <div className="flex justify-center space-x-4">
-                      <Button variant="eco" onClick={handleScan}>
+                      <Button 
+                        variant="eco" 
+                        onClick={() => fileInputRef.current?.click()}
+                      >
                         <Upload className="w-4 h-4" />
                         Upload Image
                       </Button>
-                      <Button variant="outline" onClick={handleScan}>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => cameraInputRef.current?.click()}
+                      >
                         <Camera className="w-4 h-4" />
                         Use Camera
                       </Button>
@@ -153,7 +263,7 @@ const ScanWasteTab = () => {
                     <p className="text-xs text-muted-foreground">
                       Supports JPG, PNG up to 10MB
                     </p>
-                  </>
+                  </div>
                 )}
               </div>
             ) : (
@@ -208,7 +318,7 @@ const ScanWasteTab = () => {
                   <Button variant="eco">
                     Find Disposal Center
                   </Button>
-                  <Button variant="outline" onClick={() => setScanResult(null)}>
+                  <Button variant="outline" onClick={resetScan}>
                     Scan Another Item
                   </Button>
                 </div>
