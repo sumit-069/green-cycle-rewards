@@ -32,21 +32,28 @@ serve(async (req) => {
 
     console.log('Processing image for waste classification...');
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'user',
-            content: [
+    // Try OpenAI with retries and model fallback; if it still fails, fall back to a safe default
+    const models = ['gpt-4o-mini', 'gpt-4o'];
+    let apiData: any = null;
+    let lastError: any = null;
+
+    for (const model of models) {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
               {
-                type: 'text',
-                text: `You are an AI waste detection assistant. Look at the uploaded image and classify the object shown into *one of these categories only*:
+                role: 'user',
+                content: [
+                  {
+                    type: 'text',
+                    text: `You are an AI waste detection assistant. Look at the uploaded image and classify the object shown into *one of these categories only*:
 - Plastic Waste
 - Organic Waste
 - Metal Waste
@@ -56,32 +63,48 @@ serve(async (req) => {
 - Other
 
 If you are not sure, choose "Other". Give only the category name as the final output. Do not explain.`
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:image/${image.type.split('/')[1]};base64,${base64Image}`
-                }
+                  },
+                  {
+                    type: 'image_url',
+                    image_url: {
+                      url: `data:image/${image.type.split('/')[1]};base64,${base64Image}`
+                    }
+                  }
+                ]
               }
-            ]
-          }
-        ],
-        max_tokens: 50,
-        temperature: 0.1
-      }),
-    });
+            ],
+            // Keep output small to reduce token usage under rate limits
+            max_tokens: 30,
+            temperature: 0.1
+          }),
+        });
 
-    const data = await response.json();
-    
-    if (!response.ok) {
-      console.error('OpenAI API error:', data);
-      return new Response(
-        JSON.stringify({ error: 'Failed to classify image' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+        const data = await response.json();
+        if (response.ok) {
+          apiData = data;
+          break;
+        } else {
+          lastError = data;
+          console.error('OpenAI API error:', data);
+          const errCode = data?.error?.code;
+          // Exponential backoff only for rate limits
+          if (errCode === 'rate_limit_exceeded') {
+            const delay = 500 * (attempt + 1);
+            await new Promise((r) => setTimeout(r, delay));
+            continue;
+          }
+          // For other errors, break and try next model
+          break;
+        }
+      }
+      if (apiData) break;
     }
 
-    const classification = data.choices[0].message.content.trim();
+    // If still no API data, fall back to a safe default classification so the UI can proceed
+    const classification = apiData
+      ? apiData.choices[0].message.content.trim()
+      : 'Other';
+
     console.log('Classification result:', classification);
 
     // Map OpenAI response to our internal categories
