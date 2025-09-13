@@ -3,28 +3,41 @@ import { Leaf, Mail, Phone, MapPin, Twitter, Facebook, Instagram, Linkedin } fro
 import ecoLogo from '@/assets/eco-logo.png';
 
 const Footer = () => {
+  const scrollToFeatures = (tab: string) => {
+    const featuresElement = document.getElementById('features');
+    if (featuresElement) {
+      featuresElement.scrollIntoView({ behavior: 'smooth' });
+      setTimeout(() => {
+        const tabElement = document.querySelector(`[data-value="${tab}"]`);
+        if (tabElement) {
+          (tabElement as HTMLElement).click();
+        }
+      }, 800);
+    }
+  };
+
   const footerLinks = {
     platform: [
-      { name: 'How It Works', href: '#' },
-      { name: 'Waste Scanner', href: '#' },
-      { name: 'Rewards Program', href: '#' },
-      { name: 'Events Calendar', href: '#' },
+      { name: 'How It Works', href: '#features', onClick: () => scrollToFeatures('articles') },
+      { name: 'Waste Scanner', href: '#features', onClick: () => scrollToFeatures('scan-waste') },
+      { name: 'Rewards Program', href: '#features', onClick: () => scrollToFeatures('rewards') },
+      { name: 'Events Calendar', href: '#features', onClick: () => scrollToFeatures('events') },
     ],
     resources: [
-      { name: 'Recycling Guide', href: '#' },
-      { name: 'Waste Policies', href: '#' },
-      { name: 'Educational Articles', href: '#' },
-      { name: 'Municipal Directory', href: '#' },
+      { name: 'Recycling Guide', href: '#features', onClick: () => scrollToFeatures('uses-waste') },
+      { name: 'Waste Policies', href: '#features', onClick: () => scrollToFeatures('policies') },
+      { name: 'Educational Articles', href: '#features', onClick: () => scrollToFeatures('articles') },
+      { name: 'Municipal Directory', href: '#features', onClick: () => scrollToFeatures('notify-municipal') },
     ],
     community: [
-      { name: 'Join Events', href: '#' },
-      { name: 'Share Ideas', href: '#' },
-      { name: 'Success Stories', href: '#' },
-      { name: 'Partner With Us', href: '#' },
+      { name: 'Join Events', href: '#features', onClick: () => scrollToFeatures('events') },
+      { name: 'Share Ideas', href: '#features', onClick: () => scrollToFeatures('uses-waste') },
+      { name: 'Success Stories', href: '#features', onClick: () => scrollToFeatures('articles') },
+      { name: 'Partner With Us', href: '#features', onClick: () => scrollToFeatures('events') },
     ],
     support: [
-      { name: 'Help Center', href: '#' },
-      { name: 'Contact Support', href: '#' },
+      { name: 'Help Center', href: '#features', onClick: () => scrollToFeatures('articles') },
+      { name: 'Contact Support', href: '#features', onClick: () => scrollToFeatures('notify-municipal') },
       { name: 'Privacy Policy', href: '#' },
       { name: 'Terms of Service', href: '#' },
     ]
@@ -102,7 +115,11 @@ const Footer = () => {
                     <li key={link.name}>
                       <a 
                         href={link.href}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (link.onClick) link.onClick();
+                        }}
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                       >
                         {link.name}
                       </a>
@@ -118,7 +135,11 @@ const Footer = () => {
                     <li key={link.name}>
                       <a 
                         href={link.href}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (link.onClick) link.onClick();
+                        }}
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                       >
                         {link.name}
                       </a>
@@ -134,7 +155,11 @@ const Footer = () => {
                     <li key={link.name}>
                       <a 
                         href={link.href}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (link.onClick) link.onClick();
+                        }}
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                       >
                         {link.name}
                       </a>
@@ -150,7 +175,11 @@ const Footer = () => {
                     <li key={link.name}>
                       <a 
                         href={link.href}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (link.onClick) link.onClick();
+                        }}
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                       >
                         {link.name}
                       </a>

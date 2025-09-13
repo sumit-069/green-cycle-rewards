@@ -43,11 +43,38 @@ const HeroSection = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="hero" size="lg" className="group">
+              <Button 
+                variant="hero" 
+                size="lg" 
+                className="group"
+                onClick={() => {
+                  const scamWasteElement = document.getElementById('features');
+                  if (scamWasteElement) {
+                    scamWasteElement.scrollIntoView({ behavior: 'smooth' });
+                    // Change to scan waste tab after scroll
+                    setTimeout(() => {
+                      const scamWasteTab = document.querySelector('[data-value="scan-waste"]');
+                      if (scamWasteTab) {
+                        (scamWasteTab as HTMLElement).click();
+                      }
+                    }, 800);
+                  }
+                }}
+              >
                 <Scan className="w-5 h-5 group-hover:animate-pulse" />
                 Start Scanning Waste
               </Button>
-              <Button variant="outline" size="lg" className="bg-card/50 backdrop-blur-sm">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="bg-card/50 backdrop-blur-sm"
+                onClick={() => {
+                  const featuresElement = document.getElementById('features');
+                  if (featuresElement) {
+                    featuresElement.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
                 Learn More
               </Button>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Lightbulb, 
@@ -9,14 +9,20 @@ import {
   Users,
   Search,
   Filter,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const UsesWasteTab = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [wasteIdeas, setWasteIdeas] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const wasteIdeas = [
+  const mockWasteIdeas = [
     {
       id: 1,
       title: 'Plastic Bottle Planters',
@@ -132,6 +138,42 @@ const UsesWasteTab = () => {
   const categories = ['All', 'Plastic', 'Cardboard', 'Metal', 'Glass', 'Paper', 'Organic'];
   const difficulties = ['All', 'Easy', 'Medium', 'Hard'];
 
+  const fetchWasteIdeas = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-waste-ideas', {
+        body: { 
+          wasteType: selectedCategory === 'All' ? null : selectedCategory,
+          difficulty: 'all',
+          category: searchQuery || 'general'
+        }
+      });
+
+      if (error) {
+        console.error('Error fetching waste ideas:', error);
+        toast.error('Failed to load ideas. Using sample ideas.');
+        setWasteIdeas(mockWasteIdeas);
+      } else {
+        setWasteIdeas(data.ideas || mockWasteIdeas);
+        toast.success('Ideas loaded successfully!');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to load ideas. Using sample ideas.');
+      setWasteIdeas(mockWasteIdeas);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWasteIdeas();
+  }, []);
+
+  const handleSearch = () => {
+    fetchWasteIdeas();
+  };
+
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
       case 'Easy': return 'text-success bg-success/10';
@@ -158,10 +200,13 @@ const UsesWasteTab = () => {
             <Input 
               placeholder="Search reuse ideas, materials, or techniques..." 
               className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             />
           </div>
-          <Button variant="eco" size="sm">
-            <Search className="w-4 h-4" />
+          <Button variant="eco" size="sm" onClick={handleSearch} disabled={loading}>
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             Search
           </Button>
           <Button variant="outline" size="sm">
@@ -178,7 +223,10 @@ const UsesWasteTab = () => {
               variant={category === selectedCategory ? 'eco' : 'outline'}
               size="sm"
               className="text-xs"
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => {
+                setSelectedCategory(category);
+                fetchWasteIdeas();
+              }}
             >
               {category}
             </Button>
@@ -269,8 +317,14 @@ const UsesWasteTab = () => {
           All Ideas ({regularIdeas.length})
         </h3>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {regularIdeas.map((idea) => (
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <span className="ml-2 text-muted-foreground">Loading ideas...</span>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {regularIdeas.map((idea) => (
             <div key={idea.id} className="bg-card rounded-lg card-shadow overflow-hidden hover:shadow-lg transition-shadow">
               <div className="bg-muted/50 h-40 flex items-center justify-center">
                 <span className="text-muted-foreground">Project Image</span>
@@ -324,12 +378,14 @@ const UsesWasteTab = () => {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Load More */}
       <div className="text-center">
-        <Button variant="outline" size="lg">
+        <Button variant="outline" size="lg" onClick={fetchWasteIdeas} disabled={loading}>
+          {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
           Load More Ideas
         </Button>
       </div>

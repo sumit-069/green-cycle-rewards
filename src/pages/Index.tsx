@@ -17,6 +17,15 @@ const Index = () => {
     setActiveTab(tabId);
   };
 
+  // Check for tab parameter in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, []);
+
   if (isLoading) {
     return <Loader onComplete={handleLoadingComplete} />;
   }

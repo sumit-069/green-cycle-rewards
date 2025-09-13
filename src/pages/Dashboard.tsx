@@ -214,19 +214,34 @@ const Dashboard = () => {
 
         {/* Quick Actions */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Button className="h-16 flex flex-col items-center justify-center space-y-2">
+          <Button 
+            className="h-16 flex flex-col items-center justify-center space-y-2"
+            onClick={() => navigate('/?tab=scan-waste')}
+          >
             <Camera className="w-5 h-5" />
             <span className="text-sm">Scan Waste</span>
           </Button>
-          <Button variant="outline" className="h-16 flex flex-col items-center justify-center space-y-2">
+          <Button 
+            variant="outline" 
+            className="h-16 flex flex-col items-center justify-center space-y-2"
+            onClick={() => navigate('/?tab=articles')}
+          >
             <FileText className="w-5 h-5" />
             <span className="text-sm">Read Articles</span>
           </Button>
-          <Button variant="outline" className="h-16 flex flex-col items-center justify-center space-y-2">
+          <Button 
+            variant="outline" 
+            className="h-16 flex flex-col items-center justify-center space-y-2"
+            onClick={() => navigate('/?tab=notify-municipal')}
+          >
             <MapPin className="w-5 h-5" />
             <span className="text-sm">Report Issue</span>
           </Button>
-          <Button variant="outline" className="h-16 flex flex-col items-center justify-center space-y-2">
+          <Button 
+            variant="outline" 
+            className="h-16 flex flex-col items-center justify-center space-y-2"
+            onClick={() => navigate('/?tab=rewards')}
+          >
             <Gift className="w-5 h-5" />
             <span className="text-sm">Claim Rewards</span>
           </Button>

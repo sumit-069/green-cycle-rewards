@@ -120,6 +120,7 @@ const TabbedFeatures: React.FC<TabbedFeaturesProps> = ({
                 <TabsTrigger
                   key={tab.id}
                   value={tab.id}
+                  data-value={tab.id}
                   className="flex flex-col items-center space-y-2 p-4 text-xs font-medium transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg hover:bg-primary/10"
                 >
                   <Icon className="w-5 h-5" />

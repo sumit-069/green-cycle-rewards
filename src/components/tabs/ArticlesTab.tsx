@@ -156,11 +156,13 @@ const ArticlesTab = () => {
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
 
       {/* Load More */}
       <div className="text-center">
-        <Button variant="outline" size="lg">
+        <Button variant="outline" size="lg" onClick={fetchArticles} disabled={loading}>
+          {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
           Load More Articles
         </Button>
       </div>

@@ -178,7 +178,8 @@ const EventsTab = () => {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Past Events */}

@@ -1,1 +1,29 @@
 project_id = "asroqwpitangsqdyjuvk"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[functions.classify-waste]
+verify_jwt = false
+
+[functions.fetch-articles]
+verify_jwt = false
+
+[functions.fetch-events]
+verify_jwt = false
+
+[functions.fetch-policies]
+verify_jwt = false
+
+[functions.submit-policy]
+verify_jwt = false
+
+[functions.generate-waste-ideas]
+verify_jwt = false
+
+[functions.find-municipal-offices]
+verify_jwt = false
