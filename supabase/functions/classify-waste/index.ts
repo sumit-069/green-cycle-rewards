@@ -2,8 +2,6 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -16,6 +14,15 @@ serve(async (req) => {
   }
 
   try {
+    const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
+    if (!googleApiKey) {
+      console.error('Google AI API key not found');
+      return new Response(
+        JSON.stringify({ error: 'Google AI API key not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const formData = await req.formData();
     const image = formData.get('image') as File;
 
@@ -30,30 +37,19 @@ serve(async (req) => {
     const imageBytes = await image.arrayBuffer();
     const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBytes)));
 
-    console.log('Processing image for waste classification...');
+    console.log('Processing image for waste classification with Google Gemini...');
 
-    // Try OpenAI with retries and model fallback; if it still fails, fall back to a safe default
-    const models = ['gpt-4o-mini', 'gpt-4o'];
-    let apiData: any = null;
-    let lastError: any = null;
-
-    for (const model of models) {
-      for (let attempt = 0; attempt < 2; attempt++) {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openAIApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model,
-            messages: [
-              {
-                role: 'user',
-                content: [
-                  {
-                    type: 'text',
-                    text: `You are an AI waste detection assistant. Look at the uploaded image and classify the object shown into *one of these categories only*:
+    // Use Google Gemini Pro Vision for image classification
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${googleApiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            {
+              text: `You are an AI waste detection assistant. Look at the uploaded image and classify the object shown into *one of these categories only*:
 - Plastic Waste
 - Organic Waste
 - Metal Waste
@@ -63,51 +59,35 @@ serve(async (req) => {
 - Other
 
 If you are not sure, choose "Other". Give only the category name as the final output. Do not explain.`
-                  },
-                  {
-                    type: 'image_url',
-                    image_url: {
-                      url: `data:image/${image.type.split('/')[1]};base64,${base64Image}`
-                    }
-                  }
-                ]
+            },
+            {
+              inline_data: {
+                mime_type: image.type,
+                data: base64Image
               }
-            ],
-            // Keep output small to reduce token usage under rate limits
-            max_tokens: 30,
-            temperature: 0.1
-          }),
-        });
-
-        const data = await response.json();
-        if (response.ok) {
-          apiData = data;
-          break;
-        } else {
-          lastError = data;
-          console.error('OpenAI API error:', data);
-          const errCode = data?.error?.code;
-          // Exponential backoff only for rate limits
-          if (errCode === 'rate_limit_exceeded') {
-            const delay = 500 * (attempt + 1);
-            await new Promise((r) => setTimeout(r, delay));
-            continue;
-          }
-          // For other errors, break and try next model
-          break;
+            }
+          ]
+        }],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 30
         }
-      }
-      if (apiData) break;
+      }),
+    });
+
+    const data = await response.json();
+    
+    let classification = 'Other';
+    
+    if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+      classification = data.candidates[0].content.parts[0].text.trim();
+      console.log('Classification result:', classification);
+    } else {
+      console.error('Google Gemini API error:', data);
+      console.log('Using fallback classification:', classification);
     }
 
-    // If still no API data, fall back to a safe default classification so the UI can proceed
-    const classification = apiData
-      ? apiData.choices[0].message.content.trim()
-      : 'Other';
-
-    console.log('Classification result:', classification);
-
-    // Map OpenAI response to our internal categories
+    // Map classification to our internal categories
     const categoryMapping = {
       'Plastic Waste': {
         type: 'recyclable',
