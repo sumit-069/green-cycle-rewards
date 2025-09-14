@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Clock, User, Heart } from 'lucide-react';
+import { ExternalLink, Clock, User, Heart, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const ArticlesTab = () => {
-  const articles = [
+  const [articles, setArticles] = useState([
     {
       id: 1,
       title: 'The Ultimate Guide to Zero Waste Living',
@@ -45,9 +46,33 @@ const ArticlesTab = () => {
       image: '/api/placeholder/400/200',
       category: 'Technology'
     }
-  ];
+  ]);
 
+  const [loading, setLoading] = useState(false);
   const categories = ['All', 'Lifestyle', 'Environment', 'Gardening', 'Technology', 'Policy'];
+
+  const fetchArticles = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-articles', {
+        body: { limit: 10 }
+      });
+      
+      if (error) throw error;
+      
+      if (data?.articles) {
+        setArticles(prev => [...prev, ...data.articles]);
+      }
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchArticles();
+  }, []);
 
   return (
     <div className="space-y-6">
