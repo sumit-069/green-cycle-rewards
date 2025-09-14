@@ -105,27 +105,37 @@ const GoogleMap: React.FC = () => {
   const searchNearbyOffices = async (lat?: number, lng?: number, address?: string) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('find-municipal-offices', {
-        body: {
-          latitude: lat,
-          longitude: lng,
-          address: address,
-          radius: 15000 // 15km radius
+      // For demo purposes, use mock data when Google Maps billing isn't enabled
+      const mockOffices = [
+        {
+          id: 'mock1',
+          name: 'Downtown Environmental Center',
+          address: '123 Green Street, Downtown',
+          location: { lat: (lat || 40.7128) + 0.01, lng: (lng || -74.0060) + 0.01 },
+          rating: 4.5,
+          distance: 1.2,
+          services: ['Waste Management', 'Recycling', 'Environmental Permits'],
+          contact: { phone: '+1-555-123-4567', email: 'info@env.gov', website: 'env.gov' },
+          workingHours: { monday: '8:00 AM - 5:00 PM', tuesday: '8:00 AM - 5:00 PM', wednesday: '8:00 AM - 5:00 PM', thursday: '8:00 AM - 5:00 PM', friday: '8:00 AM - 5:00 PM', saturday: '9:00 AM - 1:00 PM', sunday: 'Closed' }
+        },
+        {
+          id: 'mock2',
+          name: 'City Hall Waste Department',
+          address: '456 Municipal Ave, City Center',
+          location: { lat: (lat || 40.7128) - 0.02, lng: (lng || -74.0060) + 0.015 },
+          rating: 4.2,
+          distance: 2.8,
+          services: ['Bulk Waste', 'Hazardous Materials', 'Permits'],
+          contact: { phone: '+1-555-987-6543', email: 'waste@city.gov', website: 'city.gov' },
+          workingHours: { monday: '8:00 AM - 5:00 PM', tuesday: '8:00 AM - 5:00 PM', wednesday: '8:00 AM - 5:00 PM', thursday: '8:00 AM - 5:00 PM', friday: '8:00 AM - 5:00 PM', saturday: 'Closed', sunday: 'Closed' }
         }
-      });
+      ];
 
-      if (error) {
-        console.error('Error finding offices:', error);
-        toast.error('Failed to find municipal offices');
-        return;
-      }
-
-      setOffices(data.offices || []);
+      setOffices(mockOffices);
       
-      if (map && data.offices?.length > 0) {
-        // Clear existing markers (except user location)
-        // Add markers for each office
-        data.offices.forEach((office: MunicipalOffice, index: number) => {
+      if (map && mockOffices.length > 0) {
+        // Add markers for mock offices
+        mockOffices.forEach((office) => {
           const marker = new google.maps.Marker({
             position: office.location,
             map: map,
@@ -141,7 +151,7 @@ const GoogleMap: React.FC = () => {
                 <h3 style="margin: 0 0 8px 0; color: #333;">${office.name}</h3>
                 <p style="margin: 0 0 5px 0; font-size: 14px;">${office.address}</p>
                 <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">Distance: ${office.distance.toFixed(1)} km</p>
-                <p style="margin: 0; font-size: 12px; color: #666;">Rating: ${office.rating || 'N/A'}/5</p>
+                <p style="margin: 0; font-size: 12px; color: #666;">Rating: ${office.rating}/5</p>
               </div>
             `
           });
@@ -152,9 +162,7 @@ const GoogleMap: React.FC = () => {
           });
         });
 
-        toast.success(`Found ${data.offices.length} municipal offices nearby`);
-      } else {
-        toast.warning('No municipal offices found in your area');
+        toast.success(`Found ${mockOffices.length} municipal offices nearby (Demo mode)`);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -163,7 +171,6 @@ const GoogleMap: React.FC = () => {
       setLoading(false);
     }
   };
-
   const handleAddressSearch = () => {
     if (!searchAddress.trim()) {
       toast.error('Please enter an address to search');
