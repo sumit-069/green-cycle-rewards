@@ -156,8 +156,7 @@ const ArticlesTab = () => {
             </div>
           </div>
         ))}
-        </div>
-      )}
+      </div>
 
       {/* Load More */}
       <div className="text-center">
