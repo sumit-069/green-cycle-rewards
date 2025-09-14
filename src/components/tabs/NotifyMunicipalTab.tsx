@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,12 +14,25 @@ import {
   Navigation,
   Building,
   Star,
-  Camera
+  Camera,
+  Loader2
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import GoogleMap from '@/components/GoogleMap';
 
 const NotifyMunicipalTab = () => {
   const [selectedOffice, setSelectedOffice] = useState(null);
   const [reportSubmitted, setReportSubmitted] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [reportForm, setReportForm] = useState({
+    category: '',
+    location: '',
+    urgency: 'medium',
+    description: '',
+    photos: []
+  });
 
   const municipalOffices = [
     {
@@ -101,10 +114,50 @@ const NotifyMunicipalTab = () => {
     'Other'
   ];
 
-  const handleSubmitReport = () => {
-    setReportSubmitted(true);
-    // Award points logic would go here
-    setTimeout(() => setReportSubmitted(false), 3000);
+  const handleSubmitReport = async () => {
+    if (!reportForm.category || !reportForm.location || !reportForm.description) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Submit to municipal offices function
+      const { data, error } = await supabase.functions.invoke('submit-policy', {
+        body: {
+          type: 'waste_report',
+          category: reportForm.category,
+          location: reportForm.location,
+          urgency: reportForm.urgency,
+          description: reportForm.description,
+          office: selectedOffice?.name,
+          timestamp: new Date().toISOString()
+        }
+      });
+
+      if (error) throw error;
+
+      setReportSubmitted(true);
+      toast.success('Report submitted successfully!');
+      
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setReportSubmitted(false);
+        setReportForm({
+          category: '',
+          location: '',
+          urgency: 'medium',
+          description: '',
+          photos: []
+        });
+      }, 3000);
+
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      toast.error('Failed to submit report. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getStatusColor = (status) => {
@@ -131,11 +184,24 @@ const NotifyMunicipalTab = () => {
               className="h-12"
             />
           </div>
-          <Button variant="eco" size="lg" className="md:w-auto">
-            <Navigation className="w-4 h-4" />
-            Find Offices
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="eco" 
+              size="lg" 
+              onClick={() => setShowMap(!showMap)}
+              className="md:w-auto"
+            >
+              <Navigation className="w-4 h-4" />
+              {showMap ? 'Hide Map' : 'Show Map'}
+            </Button>
+          </div>
         </div>
+
+        {showMap && (
+          <div className="mb-6">
+            <GoogleMap />
+          </div>
+        )}
 
         <div className="grid gap-4">
           {municipalOffices.map((office) => (
@@ -233,6 +299,8 @@ const NotifyMunicipalTab = () => {
                     <Input 
                       placeholder="Enter specific location or address"
                       className="h-12"
+                      value={reportForm.location}
+                      onChange={(e) => setReportForm({...reportForm, location: e.target.value})}
                     />
                   </div>
                   
@@ -240,7 +308,11 @@ const NotifyMunicipalTab = () => {
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Urgency Level
                     </label>
-                    <select className="w-full p-3 border border-input rounded-md bg-background">
+                    <select 
+                      className="w-full p-3 border border-input rounded-md bg-background"
+                      value={reportForm.category}
+                      onChange={(e) => setReportForm({...reportForm, category: e.target.value})}
+                    >
                       <option value="low">Low - Can wait 1-2 days</option>
                       <option value="medium">Medium - Needs attention within 24hrs</option>
                       <option value="high">High - Immediate response needed</option>
@@ -256,6 +328,8 @@ const NotifyMunicipalTab = () => {
                     <Textarea 
                       placeholder="Describe the waste issue in detail..."
                       className="h-32"
+                      value={reportForm.description}
+                      onChange={(e) => setReportForm({...reportForm, description: e.target.value})}
                     />
                   </div>
                   
@@ -282,8 +356,13 @@ const NotifyMunicipalTab = () => {
                   <AlertTriangle className="w-4 h-4 inline mr-1" />
                   Earn up to 50 Eco Points for valid reports
                 </div>
-                <Button variant="eco" size="lg" onClick={handleSubmitReport}>
-                  <Send className="w-4 h-4" />
+                <Button 
+                  variant="eco" 
+                  size="lg" 
+                  onClick={handleSubmitReport}
+                  disabled={loading}
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   Submit Report
                 </Button>
               </div>
