@@ -51,11 +51,11 @@ serve(async (req) => {
             {
               text: `You are an AI waste detection assistant. Look at the uploaded image and classify the object shown into *one of these categories only*:
 - Plastic Waste
-- Organic Waste
+- Organic Waste (food, leaves, biodegradable)
 - Metal Waste
 - Glass Waste
 - Paper Waste
-- E-Waste
+- E-Waste (electronics, batteries, wires)
 - Other
 
 If you are not sure, choose "Other". Give only the category name as the final output. Do not explain.`
