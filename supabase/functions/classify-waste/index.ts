@@ -39,8 +39,8 @@ serve(async (req) => {
 
     console.log('Processing image for waste classification with Google Gemini...');
 
-    // Use Google Gemini Pro Vision for image classification with more stable model
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${googleApiKey}`, {
+    // Use Google Gemini 2.0 Flash for best image classification performance
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${googleApiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
