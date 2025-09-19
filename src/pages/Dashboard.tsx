@@ -70,7 +70,7 @@ const Dashboard = () => {
             </div>
             <div className="text-center">
               <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-              <p className="text-muted-foreground">Welcome back to GreenoVent!</p>
+              <p className="text-muted-foreground">Welcome back to GREENOVANT!</p>
             </div>
             <div className="w-24"></div>
           </div>

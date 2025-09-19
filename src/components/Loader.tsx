@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Leaf } from 'lucide-react';
-import ecoLogo from '@/assets/eco-logo.png';
+import greenovantLogo from '@/assets/greenovant-logo.jpg';
 
 const Loader = ({ onComplete }: { onComplete: () => void }) => {
   const [progress, setProgress] = useState(0);
@@ -32,7 +32,7 @@ const Loader = ({ onComplete }: { onComplete: () => void }) => {
         {/* Logo with Animation */}
         <div className="relative">
           <div className="w-32 h-32 mx-auto rounded-full bg-card/20 backdrop-blur-sm flex items-center justify-center pulse-glow">
-            <img src={ecoLogo} alt="GreenoVent Logo" className="w-20 h-20 float-animation" />
+            <img src={greenovantLogo} alt="GREENOVANT Logo" className="w-20 h-20 float-animation" />
           </div>
           
           {/* Rotating Leaves */}
@@ -47,13 +47,13 @@ const Loader = ({ onComplete }: { onComplete: () => void }) => {
         {/* Brand Text */}
         <div className="space-y-2">
           <h1 className="text-4xl md:text-5xl font-bold text-primary">
-            GreenoVent
+            GREENOVANT
           </h1>
           <p className="text-lg text-muted-foreground">
             Smart Waste Management Platform
           </p>
           <p className="text-sm text-primary font-medium">
-            Clean Earth, Green Future
+            Future in Green
           </p>
         </div>
 

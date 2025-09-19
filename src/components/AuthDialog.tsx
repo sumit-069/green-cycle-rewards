@@ -76,7 +76,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ open, onOpenChange }) => {
       });
     } else {
       toast({
-        title: "Welcome to GreenoVent!",
+        title: "Welcome to GREENOVANT!",
         description: "Please check your email to verify your account.",
       });
       onOpenChange(false);
@@ -93,7 +93,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ open, onOpenChange }) => {
             <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
               <Leaf className="w-4 h-4 text-primary" />
             </div>
-            <span>Join GreenoVent</span>
+            <span>Join GREENOVANT</span>
           </DialogTitle>
         </DialogHeader>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Leaf, Menu, X, User, LogOut, Coins } from 'lucide-react';
-import ecoLogo from '@/assets/eco-logo.png';
+import greenovantLogo from '@/assets/greenovant-logo.jpg';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import AuthDialog from './AuthDialog';
@@ -66,10 +66,10 @@ const Navigation: React.FC<NavigationProps> = ({ onTabChange }) => {
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <img src={ecoLogo} alt="GreenoVent Logo" className="w-8 h-8" />
+              <img src={greenovantLogo} alt="GREENOVANT Logo" className="w-8 h-8" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">GreenoVent</h2>
+              <h2 className="text-xl font-bold text-foreground">GREENOVANT</h2>
               <p className="text-xs text-muted-foreground">Smart & Green</p>
             </div>
           </div>
