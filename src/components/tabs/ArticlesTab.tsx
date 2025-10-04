@@ -132,8 +132,12 @@ const ArticlesTab = () => {
               </div>
             </div>
             
-            <div className="bg-muted/50 rounded-lg h-48 flex items-center justify-center">
-              <span className="text-muted-foreground">Article Image</span>
+            <div className="rounded-lg h-48 overflow-hidden">
+              <img 
+                src={article.image || '/api/placeholder/400/200'} 
+                alt={article.title}
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>
@@ -143,8 +147,12 @@ const ArticlesTab = () => {
       <div className="grid md:grid-cols-2 gap-6">
         {articles.filter(article => !article.featured).map((article) => (
           <div key={article.id} className="bg-card rounded-lg card-shadow overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="bg-muted/50 h-40 flex items-center justify-center">
-              <span className="text-muted-foreground">Article Image</span>
+            <div className="h-40 overflow-hidden">
+              <img 
+                src={article.image || '/api/placeholder/400/200'} 
+                alt={article.title}
+                className="w-full h-full object-cover"
+              />
             </div>
             
             <div className="p-6 space-y-4">

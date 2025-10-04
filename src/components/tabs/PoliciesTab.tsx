@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   FileText, 
@@ -7,12 +7,14 @@ import {
   Calendar,
   Building,
   Search,
-  Filter
+  Filter,
+  Loader2
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
 
 const PoliciesTab = () => {
-  const policies = [
+  const [policies, setPolicies] = useState([
     {
       id: 1,
       title: 'Plastic Waste Management Rules 2024',
@@ -29,7 +31,8 @@ const PoliciesTab = () => {
         'Recycling targets for manufacturers'
       ],
       document: 'plastic-waste-rules-2024.pdf',
-      views: 15420
+      views: 15420,
+      image: undefined
     },
     {
       id: 2,
@@ -47,7 +50,8 @@ const PoliciesTab = () => {
         'Green public procurement rules'
       ],
       document: 'eu-circular-economy-2024.pdf',
-      views: 22150
+      views: 22150,
+      image: undefined
     },
     {
       id: 3,
@@ -65,7 +69,8 @@ const PoliciesTab = () => {
         'Consumer education initiatives'
       ],
       document: 'epa-ewaste-guidelines.pdf',
-      views: 8930
+      views: 8930,
+      image: undefined
     },
     {
       id: 4,
@@ -83,12 +88,37 @@ const PoliciesTab = () => {
         'Waste reduction education'
       ],
       document: 'canada-msw-strategy-2030.pdf',
-      views: 6750
+      views: 6750,
+      image: undefined
     }
-  ];
+  ]);
 
+  const [loading, setLoading] = useState(false);
   const categories = ['All', 'Plastic Waste', 'Circular Economy', 'E-Waste', 'Municipal Waste', 'Hazardous Waste'];
   const countries = ['All', 'India', 'United States', 'European Union', 'Canada', 'Australia'];
+
+  const fetchPolicies = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-policies', {
+        body: { limit: 10 }
+      });
+      
+      if (error) throw error;
+      
+      if (data?.policies) {
+        setPolicies(prev => [...prev, ...data.policies]);
+      }
+    } catch (error) {
+      console.error('Error fetching policies:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPolicies();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -194,11 +224,21 @@ const PoliciesTab = () => {
               
               {/* Action Buttons */}
               <div className="flex flex-col space-y-3">
-                <div className="text-center p-4 bg-primary/5 rounded-lg">
-                  <FileText className="w-12 h-12 text-primary mx-auto mb-2" />
-                  <p className="text-sm font-medium text-foreground">Official Document</p>
-                  <p className="text-xs text-muted-foreground">{policy.document}</p>
-                </div>
+                {policy.image ? (
+                  <div className="rounded-lg overflow-hidden h-40">
+                    <img 
+                      src={policy.image} 
+                      alt={policy.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="text-center p-4 bg-primary/5 rounded-lg">
+                    <FileText className="w-12 h-12 text-primary mx-auto mb-2" />
+                    <p className="text-sm font-medium text-foreground">Official Document</p>
+                    <p className="text-xs text-muted-foreground">{policy.document}</p>
+                  </div>
+                )}
                 
                 <div className="space-y-2">
                   <Button variant="eco" className="w-full">
@@ -229,7 +269,8 @@ const PoliciesTab = () => {
 
       {/* Load More */}
       <div className="text-center">
-        <Button variant="outline" size="lg">
+        <Button variant="outline" size="lg" onClick={fetchPolicies} disabled={loading}>
+          {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
           Load More Policies
         </Button>
       </div>
