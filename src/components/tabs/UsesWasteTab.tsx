@@ -16,7 +16,11 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const UsesWasteTab = () => {
+interface UsesWasteTabProps {
+  initialWasteType?: string | null;
+}
+
+const UsesWasteTab: React.FC<UsesWasteTabProps> = ({ initialWasteType }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [wasteIdeas, setWasteIdeas] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -143,7 +147,7 @@ const UsesWasteTab = () => {
     try {
       const { data, error } = await supabase.functions.invoke('generate-waste-ideas', {
         body: { 
-          wasteType: selectedCategory === 'All' ? null : selectedCategory,
+          wasteType: selectedCategory !== 'All' ? selectedCategory : searchQuery || null,
           difficulty: 'all',
           category: searchQuery || 'general'
         }
@@ -169,6 +173,24 @@ const UsesWasteTab = () => {
   useEffect(() => {
     fetchWasteIdeas();
   }, []);
+
+  useEffect(() => {
+    if (initialWasteType) {
+      const categoryMap: Record<string, string> = {
+        'Plastic Waste': 'Plastic',
+        'Organic Waste': 'Organic',
+        'Metal Waste': 'Metal',
+        'Glass Waste': 'Glass',
+        'Paper Waste': 'Paper',
+        'E-Waste': 'Metal'
+      };
+      const mappedCategory = categoryMap[initialWasteType] || 'All';
+      setSelectedCategory(mappedCategory);
+      setSearchQuery(initialWasteType);
+      toast.success(`Showing reuse ideas for ${initialWasteType}`);
+      fetchWasteIdeas();
+    }
+  }, [initialWasteType]);
 
   const handleSearch = () => {
     fetchWasteIdeas();

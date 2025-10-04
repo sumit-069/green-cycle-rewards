@@ -11,12 +11,17 @@ import {
   Trash2,
   Zap,
   Info,
-  X
+  X,
+  Lightbulb
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const ScanWasteTab = () => {
+interface ScanWasteTabProps {
+  onWasteClassified?: (wasteType: string) => void;
+}
+
+const ScanWasteTab: React.FC<ScanWasteTabProps> = ({ onWasteClassified }) => {
   const [scanResult, setScanResult] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -323,8 +328,16 @@ const ScanWasteTab = () => {
                 </div>
                 
                 <div className="flex justify-center space-x-3">
-                  <Button variant="eco">
-                    Find Disposal Center
+                  <Button 
+                    variant="eco"
+                    onClick={() => {
+                      if (onWasteClassified && scanResult?.classification) {
+                        onWasteClassified(scanResult.classification);
+                      }
+                    }}
+                  >
+                    <Lightbulb className="w-4 h-4" />
+                    See Reuse Ideas
                   </Button>
                   <Button variant="outline" onClick={resetScan}>
                     Scan Another Item

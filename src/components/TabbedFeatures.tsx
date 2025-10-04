@@ -28,6 +28,7 @@ const TabbedFeatures: React.FC<TabbedFeaturesProps> = ({
   onTabChange 
 }) => {
   const [currentTab, setCurrentTab] = useState(activeTab);
+  const [wasteTypeForIdeas, setWasteTypeForIdeas] = useState<string | null>(null);
 
   useEffect(() => {
     setCurrentTab(activeTab);
@@ -37,6 +38,14 @@ const TabbedFeatures: React.FC<TabbedFeaturesProps> = ({
     setCurrentTab(tabId);
     if (onTabChange) {
       onTabChange(tabId);
+    }
+  };
+
+  const handleWasteClassified = (wasteType: string) => {
+    setWasteTypeForIdeas(wasteType);
+    setCurrentTab('uses-waste');
+    if (onTabChange) {
+      onTabChange('uses-waste');
     }
   };
 
@@ -141,18 +150,21 @@ const TabbedFeatures: React.FC<TabbedFeaturesProps> = ({
                   className="m-0 slide-up"
                 >
                   <div className="bg-card/50 backdrop-blur-sm rounded-xl p-6 md:p-8 card-shadow border border-primary/10">
-                    <div className="mb-6">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <tab.icon className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-semibold text-foreground">{tab.label}</h3>
-                          <p className="text-sm text-muted-foreground">{tab.description}</p>
-                        </div>
+                  <div className="mb-6">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <tab.icon className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold text-foreground">{tab.label}</h3>
+                        <p className="text-sm text-muted-foreground">{tab.description}</p>
                       </div>
                     </div>
-                    <Component />
+                  </div>
+                  <Component 
+                    {...(tab.id === 'scan-waste' ? { onWasteClassified: handleWasteClassified } : {})}
+                    {...(tab.id === 'uses-waste' ? { initialWasteType: wasteTypeForIdeas } : {})}
+                  />
                   </div>
                 </TabsContent>
               );
