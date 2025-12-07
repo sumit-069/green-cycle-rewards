@@ -6,6 +6,110 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Fallback ideas when API is unavailable
+const fallbackIdeas = [
+  {
+    id: 1,
+    title: "Plastic Bottle Vertical Garden",
+    wasteType: "Plastic",
+    difficulty: "Easy",
+    timeRequired: "30 mins",
+    description: "Transform empty plastic bottles into a stunning vertical garden for herbs or small plants.",
+    materials: ["Plastic bottles", "Scissors", "Rope or wire", "Soil", "Small plants or seeds"],
+    instructions: [
+      "Cut bottles horizontally, keeping bottom portion",
+      "Make drainage holes at the bottom",
+      "Attach bottles to wall or fence using rope",
+      "Fill with soil and plant your favorites"
+    ],
+    tags: ["Garden", "Decor", "Sustainable"],
+    likes: 1250,
+    difficulty_level: 1,
+    author: "EcoCreator",
+    featured: true
+  },
+  {
+    id: 2,
+    title: "Cardboard Cat Playhouse",
+    wasteType: "Cardboard",
+    difficulty: "Medium",
+    timeRequired: "1 hour",
+    description: "Create an exciting multi-level playhouse for your cat using cardboard boxes.",
+    materials: ["Large cardboard boxes", "Box cutter", "Tape", "Non-toxic paint"],
+    instructions: [
+      "Design your playhouse layout with multiple levels",
+      "Cut entrance holes and windows in boxes",
+      "Stack and secure boxes together",
+      "Decorate with pet-safe paint"
+    ],
+    tags: ["Pets", "Fun", "Recycling"],
+    likes: 890,
+    difficulty_level: 2,
+    author: "GreenPaws",
+    featured: false
+  },
+  {
+    id: 3,
+    title: "Glass Jar Lanterns",
+    wasteType: "Glass",
+    difficulty: "Easy",
+    timeRequired: "20 mins",
+    description: "Turn empty glass jars into beautiful decorative lanterns for indoor or outdoor use.",
+    materials: ["Glass jars", "Wire", "Pliers", "Tea light candles", "Decorative items"],
+    instructions: [
+      "Clean jars thoroughly and remove labels",
+      "Wrap wire around jar rim to create handle",
+      "Add decorative stones or sand to bottom",
+      "Place tea light inside and enjoy"
+    ],
+    tags: ["Decor", "Lighting", "Romantic"],
+    likes: 1580,
+    difficulty_level: 1,
+    author: "CraftQueen",
+    featured: true
+  },
+  {
+    id: 4,
+    title: "Newspaper Seed Pots",
+    wasteType: "Paper",
+    difficulty: "Easy",
+    timeRequired: "15 mins",
+    description: "Make biodegradable seed starting pots from old newspapers that can be planted directly in soil.",
+    materials: ["Newspaper", "Small can or jar as mold", "Water"],
+    instructions: [
+      "Cut newspaper into strips",
+      "Wrap around can leaving excess at bottom",
+      "Fold bottom flaps and press firmly",
+      "Fill with soil and plant seeds"
+    ],
+    tags: ["Garden", "Seeds", "Biodegradable"],
+    likes: 720,
+    difficulty_level: 1,
+    author: "GardenGuru",
+    featured: false
+  },
+  {
+    id: 5,
+    title: "Tin Can Wind Chimes",
+    wasteType: "Metal",
+    difficulty: "Medium",
+    timeRequired: "45 mins",
+    description: "Create melodic wind chimes from empty tin cans for your garden or balcony.",
+    materials: ["Various sized tin cans", "Acrylic paint", "String", "Beads", "Drill or hammer and nail"],
+    instructions: [
+      "Clean cans and remove labels",
+      "Paint and decorate as desired",
+      "Make holes at bottom of each can",
+      "String cans at varying lengths with beads"
+    ],
+    tags: ["Garden", "Music", "Decor"],
+    likes: 945,
+    difficulty_level: 2,
+    author: "MetalArtist",
+    featured: false
+  }
+];
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -15,10 +119,10 @@ serve(async (req) => {
   try {
     const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
     if (!googleApiKey) {
-      console.error('Google AI API key not found');
+      console.log('No API key, returning fallback ideas');
       return new Response(
-        JSON.stringify({ error: 'Google AI API key not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ ideas: fallbackIdeas }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -58,8 +162,8 @@ serve(async (req) => {
 
     Return ONLY a valid JSON array of 5 ideas, no additional text.`;
 
-    // Use Google Gemini 2.0 Flash for fast, cost-effective idea generation
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${googleApiKey}`, {
+    // Use gemini-1.5-flash for better rate limits
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${googleApiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -80,17 +184,10 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Google Gemini API error:', response.status, errorText);
-      
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
+      console.log('Returning fallback ideas due to API error');
       return new Response(
-        JSON.stringify({ error: 'Failed to generate ideas' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ ideas: fallbackIdeas }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -99,8 +196,8 @@ serve(async (req) => {
     if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
       console.error('Unexpected API response format:', data);
       return new Response(
-        JSON.stringify({ error: 'Invalid response from AI' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ ideas: fallbackIdeas }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -116,8 +213,8 @@ serve(async (req) => {
       console.error('Failed to parse AI response:', generatedText);
       console.error('Parse error:', parseError);
       return new Response(
-        JSON.stringify({ error: 'Failed to parse generated ideas' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ ideas: fallbackIdeas }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -147,8 +244,8 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in generate-waste-ideas function:', error);
     return new Response(
-      JSON.stringify({ error: 'An unexpected error occurred', details: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ ideas: fallbackIdeas }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
